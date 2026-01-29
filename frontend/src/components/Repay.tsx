@@ -5,23 +5,28 @@ import { useTokenBalance } from "../hooks/useTokenBalance";
 import { DEPLOYMENT } from "../hooks/useContract";
 import lendingAbi from "../abis/SimpleLending.json";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useToast } from "../contexts/ToastContext";
+import { getExplorerTxUrl } from "../utils/explorer";
 
 interface RepayProps {
   signer: any;
   address: string | null;
   provider: any;
   onRefresh: () => void;
+  refreshKey?: number;
+  chainId?: number | null;
 }
 
-export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
+export function Repay({ signer, address, provider, onRefresh, refreshKey = 0, chainId }: RepayProps) {
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const [amount, setAmount] = useState("");
   const [isRepaying, setIsRepaying] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { position } = useUserPosition(null, signer, address);
-  const { balances } = useTokenBalance(provider, address);
+  const { position } = useUserPosition(provider, signer, address, refreshKey);
+  const { balances } = useTokenBalance(provider, address, refreshKey);
 
   const borrowed = position ? Number(position.borrowed) / 1e18 : 0;
   const balance = parseFloat(balances.usd8);
@@ -46,7 +51,7 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
       return;
     }
 
-    setIsRepaying();
+    setIsRepaying(true);
     setError(null);
     setTxHash(null);
 
@@ -60,6 +65,7 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
 
       setAmount("");
       onRefresh();
+      showToast(t("toast.success"));
     } catch (err: any) {
       console.error("Repay failed:", err);
       setError(err.message || t("repay.errorRepay"));
@@ -173,9 +179,14 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
           </svg>
           <div className="flex-1">
             <p className="font-medium">{t("repay.txSubmitted")}</p>
-            <p className="text-white/50 text-xs mt-1 break-all">
+            <a
+              href={getExplorerTxUrl(chainId ?? null, txHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/50 text-xs mt-1 break-all hover:text-blue-300 underline block"
+            >
               {txHash.slice(0, 12)}...{txHash.slice(-10)}
-            </p>
+            </a>
           </div>
         </div>
       )}

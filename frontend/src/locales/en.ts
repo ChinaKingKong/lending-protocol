@@ -94,6 +94,7 @@ export const en = {
   "withdraw.errorValidAmount": "Please enter a valid amount",
   "withdraw.errorMax": "Maximum withdrawable is {{max}} USD8",
   "withdraw.errorWithdraw": "Withdraw failed",
+  "withdraw.errorTryLess": "Try a smaller amount or refresh the page.",
   "withdraw.errorContract": "Contract not connected",
 
   // Borrow
@@ -142,6 +143,9 @@ export const en = {
   "footer.title": "Lending Protocol",
   "footer.subtitle": "PQA Labs Coding Test",
   "footer.builtWith": "Built with",
+
+  // Toast
+  "toast.success": "Transaction successful",
 } as const;
 
 export type LocaleKey = keyof typeof en;

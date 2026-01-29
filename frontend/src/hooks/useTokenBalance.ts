@@ -3,7 +3,7 @@ import { BrowserProvider, formatUnits, Contract } from "ethers";
 import { DEPLOYMENT } from "./useContract";
 import testTokenAbi from "../abis/TestToken.json";
 
-export function useTokenBalance(provider: BrowserProvider | null, address: string | null) {
+export function useTokenBalance(provider: BrowserProvider | null, address: string | null, refreshKey = 0) {
   const [balances, setBalances] = useState({
     usd8: "0",
     weth: "0",
@@ -45,7 +45,7 @@ export function useTokenBalance(provider: BrowserProvider | null, address: strin
     };
 
     fetchBalances();
-  }, [provider, address]);
+  }, [provider, address, refreshKey]);
 
   const refresh = () => {
     if (provider && address) {

@@ -4,6 +4,12 @@ import type { WalletState } from "../types";
 
 const LOCAL_CHAIN_ID = 31337;
 const LOCAL_RPC_URL = "http://127.0.0.1:8545";
+const LOCAL_NETWORK_PARAMS = {
+  chainId: `0x${LOCAL_CHAIN_ID.toString(16)}`,
+  chainName: "Hardhat Local",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: [LOCAL_RPC_URL],
+};
 
 export function useWallet() {
   const [wallet, setWallet] = useState<WalletState>({
@@ -106,16 +112,7 @@ export function useWallet() {
         try {
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
-            params: [{
-              chainId: `0x${LOCAL_CHAIN_ID.toString(16)}`,
-              chainName: "Hardhat Local",
-              nativeCurrency: {
-                name: "Ether",
-                symbol: "ETH",
-                decimals: 18,
-              },
-              rpcUrls: [LOCAL_RPC_URL],
-            }],
+            params: [LOCAL_NETWORK_PARAMS],
           });
           return true;
         } catch (addError) {

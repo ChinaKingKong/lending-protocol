@@ -4,7 +4,7 @@ import { DEPLOYMENT } from "./useContract";
 import lendingAbi from "../abis/SimpleLending.json";
 import type { PoolInfo, UserPosition } from "../types";
 
-export function usePoolInfo(provider: BrowserProvider | null) {
+export function usePoolInfo(provider: BrowserProvider | null, refreshKey = 0) {
   const [poolInfo, setPoolInfo] = useState<PoolInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,7 +35,7 @@ export function usePoolInfo(provider: BrowserProvider | null) {
     };
 
     fetchPoolInfo();
-  }, [provider]);
+  }, [provider, refreshKey]);
 
   const refresh = () => {
     if (provider) {
@@ -55,7 +55,7 @@ export function usePoolInfo(provider: BrowserProvider | null) {
   return { poolInfo, isLoading, refresh };
 }
 
-export function useUserPosition(provider: BrowserProvider | null, signer: any, address: string | null) {
+export function useUserPosition(provider: BrowserProvider | null, signer: any, address: string | null, refreshKey = 0) {
   const [position, setPosition] = useState<UserPosition | null>(null);
   const [maxWithdraw, setMaxWithdraw] = useState("0");
   const [maxBorrow, setMaxBorrow] = useState("0");
@@ -96,7 +96,7 @@ export function useUserPosition(provider: BrowserProvider | null, signer: any, a
     };
 
     fetchUserPosition();
-  }, [provider, signer, address]);
+  }, [provider, signer, address, refreshKey]);
 
   const refresh = () => {
     if (provider && signer && address) {

@@ -10,8 +10,7 @@ export function Header() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const networkLabel =
-    wallet.chainId === 31337
+  const networkLabel = wallet.chainId === 31337
       ? t("header.hardhatNetwork")
       : wallet.chainId
         ? t("header.chainId", { id: String(wallet.chainId) })

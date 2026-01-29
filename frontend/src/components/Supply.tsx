@@ -4,6 +4,8 @@ import { useApproval } from "../hooks/useApproval";
 import { DEPLOYMENT } from "../hooks/useContract";
 import lendingAbi from "../abis/SimpleLending.json";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useToast } from "../contexts/ToastContext";
+import { getExplorerTxUrl } from "../utils/explorer";
 
 interface SupplyProps {
   signer: any;
@@ -11,10 +13,12 @@ interface SupplyProps {
   provider: any;
   balances: { usd8: string };
   onRefresh: () => void;
+  chainId?: number | null;
 }
 
-export function Supply({ signer, address, provider, balances, onRefresh }: SupplyProps) {
+export function Supply({ signer, address, provider, balances, onRefresh, chainId }: SupplyProps) {
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const [amount, setAmount] = useState("");
   const [isSupplying, setIsSupplying] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -51,7 +55,7 @@ export function Supply({ signer, address, provider, balances, onRefresh }: Suppl
       return;
     }
 
-    setIsSupplying();
+    setIsSupplying(true);
     setError(null);
     setTxHash(null);
 
@@ -65,6 +69,7 @@ export function Supply({ signer, address, provider, balances, onRefresh }: Suppl
 
       setAmount("");
       onRefresh();
+      showToast(t("toast.success"));
     } catch (err: any) {
       console.error("Supply failed:", err);
       setError(err.message || t("supply.errorSupply"));
@@ -192,9 +197,14 @@ export function Supply({ signer, address, provider, balances, onRefresh }: Suppl
           </svg>
           <div className="flex-1">
             <p className="font-medium">{t("supply.txSubmitted")}</p>
-            <p className="text-white/50 text-xs mt-1 break-all">
+            <a
+              href={getExplorerTxUrl(chainId ?? null, txHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/50 text-xs mt-1 break-all hover:text-blue-300 underline block"
+            >
               {txHash.slice(0, 12)}...{txHash.slice(-10)}
-            </p>
+            </a>
           </div>
         </div>
       )}

@@ -16,9 +16,9 @@ function App() {
   const { t, lang, isAnimating } = useLanguage();
   const [refreshCounter, setRefreshCounter] = useState(0);
 
-  const { balances } = useTokenBalance(provider, wallet.address);
-  const { poolInfo } = usePoolInfo(provider);
-  const { position } = useUserPosition(provider, signer, wallet.address);
+  const { balances } = useTokenBalance(provider, wallet.address, refreshCounter);
+  const { poolInfo } = usePoolInfo(provider, refreshCounter);
+  const { position } = useUserPosition(provider, signer, wallet.address, refreshCounter);
 
   const handleRefresh = useCallback(() => {
     setRefreshCounter((prev) => prev + 1);
@@ -135,24 +135,31 @@ function App() {
                   provider={provider}
                   balances={balances}
                   onRefresh={handleRefresh}
+                  chainId={wallet.chainId}
                 />
                 <Withdraw
                   signer={signer}
                   address={wallet.address}
                   provider={provider}
                   onRefresh={handleRefresh}
+                  refreshKey={refreshCounter}
+                  chainId={wallet.chainId}
                 />
                 <Borrow
                   signer={signer}
                   address={wallet.address}
                   provider={provider}
                   onRefresh={handleRefresh}
+                  refreshKey={refreshCounter}
+                  chainId={wallet.chainId}
                 />
                 <Repay
                   signer={signer}
                   address={wallet.address}
                   provider={provider}
                   onRefresh={handleRefresh}
+                  refreshKey={refreshCounter}
+                  chainId={wallet.chainId}
                 />
               </div>
 

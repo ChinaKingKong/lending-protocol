@@ -96,6 +96,7 @@ export const zh: Record<LocaleKey, string> = {
   "withdraw.errorValidAmount": "请输入有效数量",
   "withdraw.errorMax": "最大可取 {{max}} USD8",
   "withdraw.errorWithdraw": "取出失败",
+  "withdraw.errorTryLess": "请尝试更小金额或刷新页面。",
   "withdraw.errorContract": "合约未连接",
 
   // Borrow
@@ -144,4 +145,7 @@ export const zh: Record<LocaleKey, string> = {
   "footer.title": "借贷协议",
   "footer.subtitle": "PQA Labs 编程测试",
   "footer.builtWith": "技术栈",
+
+  // Toast
+  "toast.success": "交易成功",
 };

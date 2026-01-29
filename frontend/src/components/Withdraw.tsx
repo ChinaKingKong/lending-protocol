@@ -4,22 +4,27 @@ import { useUserPosition } from "../hooks/useLendingProtocol";
 import { DEPLOYMENT } from "../hooks/useContract";
 import lendingAbi from "../abis/SimpleLending.json";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useToast } from "../contexts/ToastContext";
+import { getExplorerTxUrl } from "../utils/explorer";
 
 interface WithdrawProps {
   signer: any;
   address: string | null;
   provider: any;
   onRefresh: () => void;
+  refreshKey?: number;
+  chainId?: number | null;
 }
 
-export function Withdraw({ signer, address, provider, onRefresh }: WithdrawProps) {
+export function Withdraw({ signer, address, provider, onRefresh, refreshKey = 0, chainId }: WithdrawProps) {
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const [amount, setAmount] = useState("");
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { maxWithdraw, position } = useUserPosition(provider, signer, address);
+  const { maxWithdraw, position } = useUserPosition(provider, signer, address, refreshKey);
 
   const handleMax = () => {
     setAmount(maxWithdraw);
@@ -37,7 +42,7 @@ export function Withdraw({ signer, address, provider, onRefresh }: WithdrawProps
       return;
     }
 
-    setIsWithdrawing();
+    setIsWithdrawing(true);
     setError(null);
     setTxHash(null);
 
@@ -51,9 +56,12 @@ export function Withdraw({ signer, address, provider, onRefresh }: WithdrawProps
 
       setAmount("");
       onRefresh();
+      showToast(t("toast.success"));
     } catch (err: any) {
       console.error("Withdraw failed:", err);
-      setError(err.message || t("withdraw.errorWithdraw"));
+      const msg = err?.reason ?? err?.message ?? "";
+      const isRevert = msg.includes("revert") || err?.code === "CALL_EXCEPTION";
+      setError(isRevert ? `${t("withdraw.errorWithdraw")} ${t("withdraw.errorTryLess")}` : msg || t("withdraw.errorWithdraw"));
       setTxHash(null);
     } finally {
       setIsWithdrawing(false);
@@ -154,9 +162,14 @@ export function Withdraw({ signer, address, provider, onRefresh }: WithdrawProps
           </svg>
           <div className="flex-1">
             <p className="font-medium">{t("withdraw.txSubmitted")}</p>
-            <p className="text-white/50 text-xs mt-1 break-all">
+            <a
+              href={getExplorerTxUrl(chainId ?? null, txHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/50 text-xs mt-1 break-all hover:text-blue-300 underline block"
+            >
               {txHash.slice(0, 12)}...{txHash.slice(-10)}
-            </p>
+            </a>
           </div>
         </div>
       )}

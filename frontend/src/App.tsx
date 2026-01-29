@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Header } from "./components/Header";
 import { PoolInfo } from "./components/PoolInfo";
 import { UserPosition } from "./components/UserPosition";
@@ -6,6 +6,7 @@ import { Supply } from "./components/Supply";
 import { Withdraw } from "./components/Withdraw";
 import { Borrow } from "./components/Borrow";
 import { Repay } from "./components/Repay";
+import { BlockExplorer } from "./components/BlockExplorer";
 import { useWallet } from "./hooks/useWallet";
 import { usePoolInfo, useUserPosition } from "./hooks/useLendingProtocol";
 import { useTokenBalance } from "./hooks/useTokenBalance";
@@ -15,6 +16,19 @@ function App() {
   const { wallet, signer, provider } = useWallet();
   const { t, lang, isAnimating } = useLanguage();
   const [refreshCounter, setRefreshCounter] = useState(0);
+  const [showExplorer, setShowExplorer] = useState(() => {
+    const h = window.location.hash;
+    return h === "#explorer" || h.startsWith("#block/") || h.startsWith("#tx/");
+  });
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash;
+      setShowExplorer(hash === "#explorer" || hash.startsWith("#block/") || hash.startsWith("#tx/"));
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
 
   const { balances } = useTokenBalance(provider, wallet.address, refreshCounter);
   const { poolInfo } = usePoolInfo(provider, refreshCounter);
@@ -37,6 +51,9 @@ function App() {
 
       {/* Only this area scrolls; language switch transition */}
       <div className="flex-1 min-h-0 overflow-auto">
+        {showExplorer ? (
+          <BlockExplorer />
+        ) : (
         <div
           key={lang}
           className={`h-full min-h-full ${isAnimating ? "lang-transition-out" : "lang-transition-in"}`}
@@ -120,10 +137,10 @@ function App() {
           )}
 
           {/* Pool Information */}
-          <PoolInfo provider={provider} />
+          <PoolInfo provider={provider} refreshKey={refreshCounter} />
 
           {/* User Position */}
-          <UserPosition provider={provider} signer={signer} address={wallet.address} />
+          <UserPosition provider={provider} signer={signer} address={wallet.address} refreshKey={refreshCounter} />
 
           {/* Action Cards */}
           {wallet.isConnected && (
@@ -284,6 +301,7 @@ function App() {
         </div>
       </footer>
         </div>
+        )}
       </div>
     </div>
   );

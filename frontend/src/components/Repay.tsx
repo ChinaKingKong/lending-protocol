@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { parseUnits, Contract } from "ethers";
+import { useApproval } from "../hooks/useApproval";
 import { useUserPosition } from "../hooks/useLendingProtocol";
 import { useTokenBalance } from "../hooks/useTokenBalance";
 import { DEPLOYMENT } from "../hooks/useContract";
@@ -25,6 +26,12 @@ export function Repay({ signer, address, provider, onRefresh, refreshKey = 0, ch
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const { isApproved, isApproving, approve } = useApproval(
+    signer,
+    address,
+    DEPLOYMENT.contracts.SimpleLending,
+    DEPLOYMENT.contracts.USD8
+  );
   const { position } = useUserPosition(provider, signer, address, refreshKey);
   const { balances } = useTokenBalance(provider, address, refreshKey);
 
@@ -33,6 +40,15 @@ export function Repay({ signer, address, provider, onRefresh, refreshKey = 0, ch
 
   const handleMax = () => {
     setAmount(Math.min(borrowed, balance).toString());
+  };
+
+  const handleApprove = async () => {
+    try {
+      setError(null);
+      await approve();
+    } catch (err: any) {
+      setError(err.message || t("repay.errorApproval"));
+    }
   };
 
   const handleRepay = async () => {
@@ -105,12 +121,12 @@ export function Repay({ signer, address, provider, onRefresh, refreshKey = 0, ch
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
               className="input-field pr-20"
-              disabled={isRepaying}
+              disabled={isRepaying || isApproving}
             />
             <button
               onClick={handleMax}
               className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-sm bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
-              disabled={isRepaying}
+              disabled={isRepaying || isApproving}
             >
               {t("supply.max")}
             </button>
@@ -140,27 +156,51 @@ export function Repay({ signer, address, provider, onRefresh, refreshKey = 0, ch
       )}
 
       {/* Action Button */}
-      <button
-        onClick={handleRepay}
-        disabled={isRepaying || !amount}
-        className="w-full btn-primary flex items-center justify-center gap-2"
-      >
-        {isRepaying ? (
-          <>
-            <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            {t("repay.repaying")}
-          </>
-        ) : (
-          <>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-            </svg>
-            {amount ? t("repay.repayAmount", { amount }) : t("repay.repay")}
-          </>
-        )}
-      </button>
+      {!isApproved ? (
+        <button
+          onClick={handleApprove}
+          disabled={isApproving || !amount}
+          className="w-full btn-primary flex items-center justify-center gap-2"
+        >
+          {isApproving ? (
+            <>
+              <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {t("repay.approving")}
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              {t("repay.approveUsd8")}
+            </>
+          )}
+        </button>
+      ) : (
+        <button
+          onClick={handleRepay}
+          disabled={isRepaying || !amount}
+          className="w-full btn-primary flex items-center justify-center gap-2"
+        >
+          {isRepaying ? (
+            <>
+              <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {t("repay.repaying")}
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+              {amount ? t("repay.repayAmount", { amount }) : t("repay.repay")}
+            </>
+          )}
+        </button>
+      )}
 
       {/* Status Messages */}
       {error && (
@@ -179,14 +219,21 @@ export function Repay({ signer, address, provider, onRefresh, refreshKey = 0, ch
           </svg>
           <div className="flex-1">
             <p className="font-medium">{t("repay.txSubmitted")}</p>
-            <a
-              href={getExplorerTxUrl(chainId ?? null, txHash)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white/50 text-xs mt-1 break-all hover:text-blue-300 underline block"
-            >
-              {txHash.slice(0, 12)}...{txHash.slice(-10)}
-            </a>
+            {chainId === 31337 ? (
+              <div className="text-white/50 text-xs mt-1">
+                <span className="text-yellow-400">{t("repay.localNetwork")}</span>
+                <code className="ml-2 bg-white/5 px-2 py-0.5 rounded">{txHash.slice(0, 10)}...{txHash.slice(-8)}</code>
+              </div>
+            ) : (
+              <a
+                href={getExplorerTxUrl(chainId ?? null, txHash)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/50 text-xs mt-1 break-all hover:text-blue-300 underline block"
+              >
+                {txHash.slice(0, 12)}...{txHash.slice(-10)}
+              </a>
+            )}
           </div>
         </div>
       )}

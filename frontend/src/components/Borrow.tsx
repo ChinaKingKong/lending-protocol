@@ -176,14 +176,21 @@ export function Borrow({ signer, address, provider, onRefresh, refreshKey = 0, c
           </svg>
           <div className="flex-1">
             <p className="font-medium">{t("borrow.txSubmitted")}</p>
-            <a
-              href={getExplorerTxUrl(chainId ?? null, txHash)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white/50 text-xs mt-1 break-all hover:text-blue-300 underline block"
-            >
-              {txHash.slice(0, 12)}...{txHash.slice(-10)}
-            </a>
+            {chainId === 31337 ? (
+              <div className="text-white/50 text-xs mt-1">
+                <span className="text-yellow-400">{t("borrow.localNetwork")}</span>
+                <code className="ml-2 bg-white/5 px-2 py-0.5 rounded">{txHash.slice(0, 10)}...{txHash.slice(-8)}</code>
+              </div>
+            ) : (
+              <a
+                href={getExplorerTxUrl(chainId ?? null, txHash)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/50 text-xs mt-1 break-all hover:text-blue-300 underline block"
+              >
+                {txHash.slice(0, 12)}...{txHash.slice(-10)}
+              </a>
+            )}
           </div>
         </div>
       )}

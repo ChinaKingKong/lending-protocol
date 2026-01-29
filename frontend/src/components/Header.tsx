@@ -22,7 +22,14 @@ export function Header() {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center gap-4">
-            <a href="/" className="flex items-center gap-4">
+            <a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.hash = "";
+              }}
+              className="flex items-center gap-4"
+            >
               <img src="/logo.svg" alt={t("header.logoAlt")} className="h-12 w-auto" />
             </a>
             <div>
@@ -34,8 +41,16 @@ export function Header() {
             </div>
           </div>
 
-          {/* Wallet + Language */}
+          {/* Block Explorer + Language + Wallet */}
           <div className="flex items-center gap-4">
+            {wallet.chainId === 31337 && (
+              <a
+                href="#explorer"
+                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"
+              >
+                {t("header.blockExplorer")}
+              </a>
+            )}
             {/* Language switcher */}
             <div className="flex items-center rounded-xl overflow-hidden border border-white/10 bg-white/5">
               <button

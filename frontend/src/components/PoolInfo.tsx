@@ -5,10 +5,11 @@ import type { BrowserProvider } from "ethers";
 
 interface PoolInfoProps {
   provider: BrowserProvider | null;
+  refreshKey?: number;
 }
 
-export function PoolInfo({ provider }: PoolInfoProps) {
-  const { poolInfo, isLoading } = usePoolInfo(provider);
+export function PoolInfo({ provider, refreshKey = 0 }: PoolInfoProps) {
+  const { poolInfo, isLoading } = usePoolInfo(provider, refreshKey);
   const { t } = useLanguage();
 
   if (isLoading) {

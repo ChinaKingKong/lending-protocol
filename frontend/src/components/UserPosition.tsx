@@ -7,10 +7,11 @@ interface UserPositionProps {
   provider: BrowserProvider | null;
   signer: JsonRpcSigner | null;
   address: string | null;
+  refreshKey?: number;
 }
 
-export function UserPosition({ provider, signer, address }: UserPositionProps) {
-  const { position, maxWithdraw, maxBorrow, isLoading } = useUserPosition(provider, signer, address);
+export function UserPosition({ provider, signer, address, refreshKey = 0 }: UserPositionProps) {
+  const { position, maxWithdraw, maxBorrow, isLoading } = useUserPosition(provider, signer, address, refreshKey);
   const { t } = useLanguage();
 
   if (isLoading) {
@@ -39,11 +40,13 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
 
   const supplied = Number(position.supplied) / 1e18;
   const borrowed = Number(position.borrowed) / 1e18;
+  const HEALTH_INFINITE = "__INFINITE__";
   const healthFactor = position.healthFactor === BigInt("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF") ?
-    "Infinity" : (Number(position.healthFactor) / 100).toFixed(2);
+    HEALTH_INFINITE : (Number(position.healthFactor) / 100).toFixed(2);
+  const healthFactorDisplay = healthFactor === HEALTH_INFINITE ? t("position.healthFactorInfinite") : healthFactor;
 
   const getHealthConfig = (hf: string) => {
-    if (hf === "Infinity") {
+    if (hf === HEALTH_INFINITE) {
       return {
         color: "emerald",
         text: "text-emerald-400",
@@ -147,7 +150,7 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
           </svg>
           <div>
             <p className="text-xs text-white/50">{t("position.healthFactor")}</p>
-            <p className={`text-lg font-bold ${healthConfig.text}`}>{healthFactor}</p>
+            <p className={`text-lg font-bold ${healthConfig.text}`}>{healthFactorDisplay}</p>
           </div>
         </div>
       </div>
@@ -206,7 +209,7 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
       </div>
 
       {/* Health Factor Progress Bar */}
-      {healthFactor !== "Infinity" && (
+      {healthFactor !== HEALTH_INFINITE && (
         <div className="mt-6 p-4 rounded-xl bg-white/5">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-white/70">{t("position.healthProgress")}</span>

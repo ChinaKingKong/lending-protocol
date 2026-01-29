@@ -134,7 +134,7 @@ export function useWallet() {
       return false;
     }
 
-    setIsConnecting();
+    setIsConnecting(true);
     setError(null);
 
     try {

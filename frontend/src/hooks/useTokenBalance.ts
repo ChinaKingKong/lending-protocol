@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { BrowserProvider, formatUnits } from "ethers";
-import { useTestToken } from "./useContract";
+import { BrowserProvider, formatUnits, Contract } from "ethers";
 import { DEPLOYMENT } from "./useContract";
+import testTokenAbi from "../abis/TestToken.json";
 
 export function useTokenBalance(provider: BrowserProvider | null, address: string | null) {
   const [balances, setBalances] = useState({
@@ -24,13 +24,13 @@ export function useTokenBalance(provider: BrowserProvider | null, address: strin
         // Get ETH balance
         const ethBalance = await provider.getBalance(address);
 
-        // Get USD8 balance
-        const usd8Contract = useTestToken(provider, DEPLOYMENT.contracts.USD8);
-        const usd8Balance = usd8Contract ? await usd8Contract.balanceOf(address) : 0n;
+        // Get USD8 balance - create contract instance directly
+        const usd8Contract = new Contract(DEPLOYMENT.contracts.USD8, testTokenAbi.abi, provider);
+        const usd8Balance = await usd8Contract.balanceOf(address);
 
-        // Get WETH balance
-        const wethContract = useTestToken(provider, DEPLOYMENT.contracts.WETH);
-        const wethBalance = wethContract ? await wethContract.balanceOf(address) : 0n;
+        // Get WETH balance - create contract instance directly
+        const wethContract = new Contract(DEPLOYMENT.contracts.WETH, testTokenAbi.abi, provider);
+        const wethBalance = await wethContract.balanceOf(address);
 
         setBalances({
           usd8: formatUnits(usd8Balance, 18),
@@ -50,15 +50,18 @@ export function useTokenBalance(provider: BrowserProvider | null, address: strin
   const refresh = () => {
     if (provider && address) {
       // Trigger re-fetch
-      provider.getBalance(address).then((ethBalance) => {
-        useTestToken(provider, DEPLOYMENT.contracts.USD8)?.balanceOf(address).then((usd8Balance: bigint) => {
-          useTestToken(provider, DEPLOYMENT.contracts.WETH)?.balanceOf(address).then((wethBalance: bigint) => {
-            setBalances({
-              usd8: formatUnits(usd8Balance, 18),
-              weth: formatUnits(wethBalance, 18),
-              eth: formatUnits(ethBalance, 18),
-            });
-          });
+      const usd8Contract = new Contract(DEPLOYMENT.contracts.USD8, testTokenAbi.abi, provider);
+      const wethContract = new Contract(DEPLOYMENT.contracts.WETH, testTokenAbi.abi, provider);
+
+      Promise.all([
+        provider.getBalance(address),
+        usd8Contract.balanceOf(address),
+        wethContract.balanceOf(address),
+      ]).then(([ethBalance, usd8Balance, wethBalance]) => {
+        setBalances({
+          usd8: formatUnits(usd8Balance, 18),
+          weth: formatUnits(wethBalance, 18),
+          eth: formatUnits(ethBalance, 18),
         });
       });
     }

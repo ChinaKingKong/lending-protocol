@@ -132,17 +132,20 @@ function App() {
                 <Supply
                   signer={signer}
                   address={wallet.address}
+                  provider={provider}
                   balances={balances}
                   onRefresh={handleRefresh}
                 />
                 <Withdraw
                   signer={signer}
                   address={wallet.address}
+                  provider={provider}
                   onRefresh={handleRefresh}
                 />
                 <Borrow
                   signer={signer}
                   address={wallet.address}
+                  provider={provider}
                   onRefresh={handleRefresh}
                 />
                 <Repay

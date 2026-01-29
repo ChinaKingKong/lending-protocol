@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { BrowserProvider, formatUnits } from "ethers";
-import { useLendingProtocol } from "./useContract";
+import { BrowserProvider, formatUnits, Contract } from "ethers";
+import { DEPLOYMENT } from "./useContract";
+import lendingAbi from "../abis/SimpleLending.json";
 import type { PoolInfo, UserPosition } from "../types";
 
 export function usePoolInfo(provider: BrowserProvider | null) {
@@ -17,12 +18,7 @@ export function usePoolInfo(provider: BrowserProvider | null) {
       setIsLoading(true);
 
       try {
-        const contract = useLendingProtocol(provider);
-        if (!contract) {
-          setIsLoading(false);
-          return;
-        }
-
+        const contract = new Contract(DEPLOYMENT.contracts.SimpleLending, lendingAbi.abi, provider);
         const info = await contract.getPoolInfo();
         setPoolInfo({
           totalSupply: info[0],
@@ -43,8 +39,8 @@ export function usePoolInfo(provider: BrowserProvider | null) {
 
   const refresh = () => {
     if (provider) {
-      const contract = useLendingProtocol(provider);
-      contract?.getPoolInfo().then((info: any) => {
+      const contract = new Contract(DEPLOYMENT.contracts.SimpleLending, lendingAbi.abi, provider);
+      contract.getPoolInfo().then((info: any) => {
         setPoolInfo({
           totalSupply: info[0],
           totalBorrow: info[1],
@@ -77,12 +73,7 @@ export function useUserPosition(provider: BrowserProvider | null, signer: any, a
       setIsLoading(true);
 
       try {
-        const contract = useLendingProtocol(signer);
-        if (!contract) {
-          setIsLoading(false);
-          return;
-        }
-
+        const contract = new Contract(DEPLOYMENT.contracts.SimpleLending, lendingAbi.abi, signer);
         const [pos, maxW, maxB] = await Promise.all([
           contract.getUserPosition(address),
           contract.calculateMaxWithdraw(address),
@@ -109,7 +100,7 @@ export function useUserPosition(provider: BrowserProvider | null, signer: any, a
 
   const refresh = () => {
     if (provider && signer && address) {
-      const contract = useLendingProtocol(signer);
+      const contract = new Contract(DEPLOYMENT.contracts.SimpleLending, lendingAbi.abi, signer);
       Promise.all([
         contract.getUserPosition(address),
         contract.calculateMaxWithdraw(address),

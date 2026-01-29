@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { parseUnits, Contract } from "ethers";
 import { useUserPosition } from "../hooks/useLendingProtocol";
 import { useTokenBalance } from "../hooks/useTokenBalance";
-import { useLendingProtocol } from "../hooks/useContract";
+import { DEPLOYMENT } from "../hooks/useContract";
+import lendingAbi from "../abis/SimpleLending.json";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface RepayProps {
@@ -50,11 +51,7 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
     setTxHash(null);
 
     try {
-      const contract: Contract = useLendingProtocol(signer);
-      if (!contract) {
-        throw new Error(t("repay.errorContract"));
-      }
-
+      const contract = new Contract(DEPLOYMENT.contracts.SimpleLending, lendingAbi.abi, signer);
       const amountToRepay = parseUnits(amount, 18);
       const tx = await contract.repay(amountToRepay);
       setTxHash(tx.hash);

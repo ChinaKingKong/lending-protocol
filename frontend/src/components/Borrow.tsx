@@ -1,23 +1,25 @@
 import React, { useState } from "react";
 import { parseUnits, Contract } from "ethers";
 import { useUserPosition } from "../hooks/useLendingProtocol";
-import { useLendingProtocol } from "../hooks/useContract";
+import { DEPLOYMENT } from "../hooks/useContract";
+import lendingAbi from "../abis/SimpleLending.json";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface BorrowProps {
   signer: any;
   address: string | null;
+  provider: any;
   onRefresh: () => void;
 }
 
-export function Borrow({ signer, address, onRefresh }: BorrowProps) {
+export function Borrow({ signer, address, provider, onRefresh }: BorrowProps) {
   const { t } = useLanguage();
   const [amount, setAmount] = useState("");
   const [isBorrowing, setIsBorrowing] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { maxBorrow, position } = useUserPosition(null, signer, address);
+  const { maxBorrow, position } = useUserPosition(provider, signer, address);
 
   const handleMax = () => {
     setAmount(maxBorrow);
@@ -40,11 +42,7 @@ export function Borrow({ signer, address, onRefresh }: BorrowProps) {
     setTxHash(null);
 
     try {
-      const contract: Contract = useLendingProtocol(signer);
-      if (!contract) {
-        throw new Error(t("borrow.errorContract"));
-      }
-
+      const contract = new Contract(DEPLOYMENT.contracts.SimpleLending, lendingAbi.abi, signer);
       const amountToBorrow = parseUnits(amount, 18);
       const tx = await contract.borrow(amountToBorrow);
       setTxHash(tx.hash);

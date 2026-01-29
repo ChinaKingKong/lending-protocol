@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { parseUnits, formatUnits } from "ethers";
-import { useTestToken } from "./useContract";
+import { parseUnits, formatUnits, Contract } from "ethers";
 import { DEPLOYMENT } from "./useContract";
+import testTokenAbi from "../abis/TestToken.json";
 
 export function useApproval(
   signer: any,
@@ -22,9 +22,7 @@ export function useApproval(
       }
 
       try {
-        const contract = useTestToken(signer, tokenAddress);
-        if (!contract) return;
-
+        const contract = new Contract(tokenAddress, testTokenAbi.abi, signer);
         const allowanceValue = await contract.allowance(owner, spenderAddress);
         const formatted = formatUnits(allowanceValue, 18);
         setAllowance(formatted);
@@ -46,11 +44,7 @@ export function useApproval(
     setIsApproving(true);
 
     try {
-      const contract = useTestToken(signer, tokenAddress);
-      if (!contract) {
-        throw new Error("Contract not found");
-      }
-
+      const contract = new Contract(tokenAddress, testTokenAbi.abi, signer);
       const amountToApprove = parseUnits(amount, 18);
       const tx = await contract.approve(spenderAddress, amountToApprove);
       await tx.wait();

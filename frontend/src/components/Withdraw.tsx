@@ -1,23 +1,25 @@
 import React, { useState } from "react";
 import { parseUnits, Contract } from "ethers";
 import { useUserPosition } from "../hooks/useLendingProtocol";
-import { useLendingProtocol } from "../hooks/useContract";
+import { DEPLOYMENT } from "../hooks/useContract";
+import lendingAbi from "../abis/SimpleLending.json";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface WithdrawProps {
   signer: any;
   address: string | null;
+  provider: any;
   onRefresh: () => void;
 }
 
-export function Withdraw({ signer, address, onRefresh }: WithdrawProps) {
+export function Withdraw({ signer, address, provider, onRefresh }: WithdrawProps) {
   const { t } = useLanguage();
   const [amount, setAmount] = useState("");
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { maxWithdraw, position } = useUserPosition(null, signer, address);
+  const { maxWithdraw, position } = useUserPosition(provider, signer, address);
 
   const handleMax = () => {
     setAmount(maxWithdraw);
@@ -40,11 +42,7 @@ export function Withdraw({ signer, address, onRefresh }: WithdrawProps) {
     setTxHash(null);
 
     try {
-      const contract: Contract = useLendingProtocol(signer);
-      if (!contract) {
-        throw new Error(t("withdraw.errorContract"));
-      }
-
+      const contract = new Contract(DEPLOYMENT.contracts.SimpleLending, lendingAbi.abi, signer);
       const amountToWithdraw = parseUnits(amount, 18);
       const tx = await contract.withdraw(amountToWithdraw);
       setTxHash(tx.hash);

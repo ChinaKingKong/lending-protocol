@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import { parseUnits, Contract } from "ethers";
 import { useApproval } from "../hooks/useApproval";
-import { useLendingProtocol, DEPLOYMENT } from "../hooks/useContract";
+import { DEPLOYMENT } from "../hooks/useContract";
+import lendingAbi from "../abis/SimpleLending.json";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface SupplyProps {
   signer: any;
   address: string | null;
+  provider: any;
   balances: { usd8: string };
   onRefresh: () => void;
 }
 
-export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
+export function Supply({ signer, address, provider, balances, onRefresh }: SupplyProps) {
   const { t } = useLanguage();
   const [amount, setAmount] = useState("");
   const [isSupplying, setIsSupplying] = useState(false);
@@ -54,11 +56,7 @@ export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
     setTxHash(null);
 
     try {
-      const contract: Contract = useLendingProtocol(signer);
-      if (!contract) {
-        throw new Error(t("supply.errorContract"));
-      }
-
+      const contract = new Contract(DEPLOYMENT.contracts.SimpleLending, lendingAbi.abi, signer);
       const amountToSupply = parseUnits(amount, 18);
       const tx = await contract.supply(amountToSupply);
       setTxHash(tx.hash);

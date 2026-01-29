@@ -1,5 +1,6 @@
 import { useWallet } from "../hooks/useWallet";
 import { useLanguage } from "../contexts/LanguageContext";
+import { formatUnits } from "ethers";
 
 export function Header() {
   const { wallet, isConnecting, connect, disconnect } = useWallet();
@@ -65,7 +66,7 @@ export function Header() {
                 <div className="hidden sm:block text-right">
                   <p className="text-sm font-semibold text-white">{formatAddress(wallet.address!)}</p>
                   <p className="text-xs text-white/50">
-                    {parseFloat(wallet.balance.toString() || "0").toFixed(4)} ETH
+                    {parseFloat(formatUnits(wallet.balance || 0n, 18)).toFixed(2)} ETH
                   </p>
                 </div>
                 <div className="h-10 w-px bg-white/10"></div>

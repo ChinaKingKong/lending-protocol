@@ -108,6 +108,25 @@
   animation: gradient-shift 3s ease infinite;
 }
 
+/* Language switch transition */
+@keyframes lang-switch-out {
+  from { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  to { opacity: 0; transform: translateY(-10px) scale(0.98); filter: blur(4px); }
+}
+
+@keyframes lang-switch-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+.lang-transition-out {
+  animation: lang-switch-out 0.28s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.lang-transition-in {
+  animation: lang-switch-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

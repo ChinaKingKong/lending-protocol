@@ -1,5 +1,6 @@
 import React from "react";
 import { usePoolInfo } from "../hooks/useLendingProtocol";
+import { useLanguage } from "../contexts/LanguageContext";
 import type { BrowserProvider } from "ethers";
 
 interface PoolInfoProps {
@@ -8,6 +9,7 @@ interface PoolInfoProps {
 
 export function PoolInfo({ provider }: PoolInfoProps) {
   const { poolInfo, isLoading } = usePoolInfo(provider);
+  const { t } = useLanguage();
 
   if (isLoading) {
     return (
@@ -28,7 +30,7 @@ export function PoolInfo({ provider }: PoolInfoProps) {
         <svg className="w-16 h-16 mx-auto mb-4 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
-        <p className="text-white/50">Connect wallet to view pool information</p>
+        <p className="text-white/50">{t("pool.connectToView")}</p>
       </div>
     );
   }
@@ -45,7 +47,7 @@ export function PoolInfo({ provider }: PoolInfoProps) {
 
   const stats = [
     {
-      label: "Total Supply",
+      label: t("pool.totalSupply"),
       value: totalSupplyValue.toLocaleString("en-US", { maximumFractionDigits: 2 }),
       unit: "USD8",
       icon: (
@@ -57,7 +59,7 @@ export function PoolInfo({ provider }: PoolInfoProps) {
       bgColor: "bg-emerald-500/10",
     },
     {
-      label: "Total Borrowed",
+      label: t("pool.totalBorrowed"),
       value: totalBorrowValue.toLocaleString("en-US", { maximumFractionDigits: 2 }),
       unit: "USD8",
       icon: (
@@ -69,7 +71,7 @@ export function PoolInfo({ provider }: PoolInfoProps) {
       bgColor: "bg-red-500/10",
     },
     {
-      label: "Utilization Rate",
+      label: t("pool.utilizationRate"),
       value: `${utilizationRate.toFixed(2)}%`,
       unit: "",
       icon: (
@@ -82,9 +84,9 @@ export function PoolInfo({ provider }: PoolInfoProps) {
       isProgress: true,
     },
     {
-      label: "Supply APY",
+      label: t("pool.supplyApy"),
       value: `${Number(poolInfo.supplyRate).toFixed(2)}%`,
-      unit: "Per Year",
+      unit: t("pool.perYear"),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -94,9 +96,9 @@ export function PoolInfo({ provider }: PoolInfoProps) {
       bgColor: "bg-green-500/10",
     },
     {
-      label: "Borrow APY",
+      label: t("pool.borrowApy"),
       value: `${Number(poolInfo.borrowRate).toFixed(2)}%`,
-      unit: "Per Year",
+      unit: t("pool.perYear"),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
@@ -116,8 +118,8 @@ export function PoolInfo({ provider }: PoolInfoProps) {
           </svg>
         </div>
         <div>
-          <h2 className="text-lg font-bold text-white">Pool Information</h2>
-          <p className="text-xs text-white/50">Real-time market data</p>
+          <h2 className="text-lg font-bold text-white">{t("pool.title")}</h2>
+          <p className="text-xs text-white/50">{t("pool.subtitle")}</p>
         </div>
       </div>
 

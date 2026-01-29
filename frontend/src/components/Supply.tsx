@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { parseUnits, Contract } from "ethers";
 import { useApproval } from "../hooks/useApproval";
 import { useLendingProtocol, DEPLOYMENT } from "../hooks/useContract";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface SupplyProps {
   signer: any;
@@ -11,6 +12,7 @@ interface SupplyProps {
 }
 
 export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
+  const { t } = useLanguage();
   const [amount, setAmount] = useState("");
   const [isSupplying, setIsSupplying] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -32,18 +34,18 @@ export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
       setError(null);
       await approve();
     } catch (err: any) {
-      setError(err.message || "Approval failed");
+      setError(err.message || t("supply.errorApproval"));
     }
   };
 
   const handleSupply = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      setError("Please enter a valid amount");
+      setError(t("supply.errorValidAmount"));
       return;
     }
 
     if (parseFloat(amount) > parseFloat(balances.usd8)) {
-      setError("Insufficient balance");
+      setError(t("supply.errorInsufficient"));
       return;
     }
 
@@ -54,7 +56,7 @@ export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
     try {
       const contract: Contract = useLendingProtocol(signer);
       if (!contract) {
-        throw new Error("Contract not connected");
+        throw new Error(t("supply.errorContract"));
       }
 
       const amountToSupply = parseUnits(amount, 18);
@@ -67,7 +69,7 @@ export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
       onRefresh();
     } catch (err: any) {
       console.error("Supply failed:", err);
-      setError(err.message || "Supply failed");
+      setError(err.message || t("supply.errorSupply"));
       setTxHash(null);
     } finally {
       setIsSupplying(false);
@@ -88,17 +90,17 @@ export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
           </svg>
         </div>
         <div>
-          <h3 className="text-lg font-bold text-white">Supply Assets</h3>
-          <p className="text-xs text-white/50">Earn interest on your deposits</p>
+          <h3 className="text-lg font-bold text-white">{t("supply.title")}</h3>
+          <p className="text-xs text-white/50">{t("supply.subtitle")}</p>
         </div>
         <div className="ml-auto px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-sm font-semibold">
-          Supply APY: ~2%
+          {t("supply.apyBadge")}
         </div>
       </div>
 
       {/* Input Section */}
       <div className="relative mb-6">
-        <label className="text-white/50 text-sm mb-2 block">Amount (USD8)</label>
+        <label className="text-white/50 text-sm mb-2 block">{t("supply.amount")}</label>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <input
@@ -114,13 +116,13 @@ export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
               className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-sm bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
               disabled={isSupplying || isApproving}
             >
-              MAX
+              {t("supply.max")}
             </button>
           </div>
         </div>
         <div className="flex justify-between items-center mt-2">
           <p className="text-white/30 text-xs">
-            Balance:{" "}
+            {t("supply.balance")}:{" "}
             <span className="text-white/70">
               {parseFloat(balances.usd8).toLocaleString("en-US", { maximumFractionDigits: 4 })} USD8
             </span>
@@ -140,14 +142,14 @@ export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
               <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Approving...
+              {t("supply.approving")}
             </>
           ) : (
             <>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
-              Approve USD8
+              {t("supply.approveUsd8")}
             </>
           )}
         </button>
@@ -162,14 +164,14 @@ export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
               <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Supplying...
+              {t("supply.supplying")}
             </>
           ) : (
             <>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
               </svg>
-              Supply {amount && `${amount} USD8`}
+              {amount ? t("supply.supplyAmount", { amount }) : t("supply.supply")}
             </>
           )}
         </button>
@@ -191,7 +193,7 @@ export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div className="flex-1">
-            <p className="font-medium">Transaction submitted</p>
+            <p className="font-medium">{t("supply.txSubmitted")}</p>
             <p className="text-white/50 text-xs mt-1 break-all">
               {txHash.slice(0, 12)}...{txHash.slice(-10)}
             </p>
@@ -204,7 +206,7 @@ export function Supply({ signer, address, balances, onRefresh }: SupplyProps) {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
-          Approved: {parseFloat(allowance).toLocaleString()} USD8
+          {t("supply.approved")}: {parseFloat(allowance).toLocaleString()} USD8
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@ import { parseUnits, Contract } from "ethers";
 import { useUserPosition } from "../hooks/useLendingProtocol";
 import { useTokenBalance } from "../hooks/useTokenBalance";
 import { useLendingProtocol } from "../hooks/useContract";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface RepayProps {
   signer: any;
@@ -12,6 +13,7 @@ interface RepayProps {
 }
 
 export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
+  const { t } = useLanguage();
   const [amount, setAmount] = useState("");
   const [isRepaying, setIsRepaying] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -29,17 +31,17 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
 
   const handleRepay = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      setError("Please enter a valid amount");
+      setError(t("repay.errorValidAmount"));
       return;
     }
 
     if (parseFloat(amount) > balance) {
-      setError("Insufficient USD8 balance");
+      setError(t("repay.errorInsufficient"));
       return;
     }
 
     if (parseFloat(amount) > borrowed) {
-      setError(`Maximum repayable is ${borrowed.toFixed(2)} USD8`);
+      setError(t("repay.errorMax", { max: borrowed.toFixed(2) }));
       return;
     }
 
@@ -50,7 +52,7 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
     try {
       const contract: Contract = useLendingProtocol(signer);
       if (!contract) {
-        throw new Error("Contract not connected");
+        throw new Error(t("repay.errorContract"));
       }
 
       const amountToRepay = parseUnits(amount, 18);
@@ -63,7 +65,7 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
       onRefresh();
     } catch (err: any) {
       console.error("Repay failed:", err);
-      setError(err.message || "Repay failed");
+      setError(err.message || t("repay.errorRepay"));
       setTxHash(null);
     } finally {
       setIsRepaying(false);
@@ -84,14 +86,14 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
           </svg>
         </div>
         <div>
-          <h3 className="text-lg font-bold text-white">Repay Debt</h3>
-          <p className="text-xs text-white/50">Pay back your borrowed tokens</p>
+          <h3 className="text-lg font-bold text-white">{t("repay.title")}</h3>
+          <p className="text-xs text-white/50">{t("repay.subtitle")}</p>
         </div>
       </div>
 
       {/* Input Section */}
       <div className="relative mb-6">
-        <label className="text-white/50 text-sm mb-2 block">Amount (USD8)</label>
+        <label className="text-white/50 text-sm mb-2 block">{t("repay.amount")}</label>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <input
@@ -107,17 +109,17 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
               className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-sm bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
               disabled={isRepaying}
             >
-              MAX
+              {t("supply.max")}
             </button>
           </div>
         </div>
         <div className="flex justify-between items-center mt-2">
           <p className="text-white/30 text-xs">
-            Your Debt:{" "}
+            {t("repay.yourDebt")}:{" "}
             <span className="text-white/70">{borrowed.toFixed(2)} USD8</span>
           </p>
           <p className="text-orange-400 text-xs">
-            Balance: {balance.toLocaleString("en-US", { maximumFractionDigits: 2 })} USD8
+            {t("repay.balance")}: {balance.toLocaleString("en-US", { maximumFractionDigits: 2 })} USD8
           </p>
         </div>
       </div>
@@ -129,7 +131,7 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p>Repaying reduces your debt and improves health factor</p>
+            <p>{t("repay.repayTip")}</p>
           </div>
         </div>
       )}
@@ -145,14 +147,14 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
             <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            Repaying...
+            {t("repay.repaying")}
           </>
         ) : (
           <>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
             </svg>
-            Repay {amount && `${amount} USD8`}
+            {amount ? t("repay.repayAmount", { amount }) : t("repay.repay")}
           </>
         )}
       </button>
@@ -173,7 +175,7 @@ export function Repay({ signer, address, provider, onRefresh }: RepayProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div className="flex-1">
-            <p className="font-medium">Transaction submitted</p>
+            <p className="font-medium">{t("repay.txSubmitted")}</p>
             <p className="text-white/50 text-xs mt-1 break-all">
               {txHash.slice(0, 12)}...{txHash.slice(-10)}
             </p>

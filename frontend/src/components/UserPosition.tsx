@@ -1,5 +1,6 @@
 import React from "react";
 import { useUserPosition } from "../hooks/useLendingProtocol";
+import { useLanguage } from "../contexts/LanguageContext";
 import type { BrowserProvider, JsonRpcSigner } from "ethers";
 
 interface UserPositionProps {
@@ -10,6 +11,7 @@ interface UserPositionProps {
 
 export function UserPosition({ provider, signer, address }: UserPositionProps) {
   const { position, maxWithdraw, maxBorrow, isLoading } = useUserPosition(provider, signer, address);
+  const { t } = useLanguage();
 
   if (isLoading) {
     return (
@@ -30,7 +32,7 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
         <svg className="w-20 h-20 mx-auto mb-4 text-white/10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
-        <p className="text-white/50">Connect wallet to view your position</p>
+        <p className="text-white/50">{t("position.connectToView")}</p>
       </div>
     );
   }
@@ -47,7 +49,7 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
         text: "text-emerald-400",
         bg: "bg-emerald-500/10",
         border: "border-emerald-500/30",
-        label: "Safe",
+        label: t("position.safeLabel"),
         icon: "shield-check"
       };
     }
@@ -58,7 +60,7 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
         text: "text-emerald-400",
         bg: "bg-emerald-500/10",
         border: "border-emerald-500/30",
-        label: "Safe",
+        label: t("position.safeLabel"),
         icon: "shield-check"
       };
     } else if (numHf > 100) {
@@ -67,7 +69,7 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
         text: "text-yellow-400",
         bg: "bg-yellow-500/10",
         border: "border-yellow-500/30",
-        label: "Moderate",
+        label: t("position.moderateLabel"),
         icon: "exclamation-triangle"
       };
     } else {
@@ -76,7 +78,7 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
         text: "text-red-400",
         bg: "bg-red-500/10",
         border: "border-red-500/30",
-        label: "At Risk",
+        label: t("position.atRiskLabel"),
         icon: "exclamation-circle"
       };
     }
@@ -98,7 +100,7 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
 
   const positionStats = [
     {
-      label: "Supplied",
+      label: t("position.supplied"),
       value: supplied.toLocaleString("en-US", { maximumFractionDigits: 2 }),
       unit: "USD8",
       color: "text-emerald-400",
@@ -110,7 +112,7 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
       ),
     },
     {
-      label: "Borrowed",
+      label: t("position.borrowed"),
       value: borrowed.toLocaleString("en-US", { maximumFractionDigits: 2 }),
       unit: "USD8",
       color: "text-red-400",
@@ -133,8 +135,8 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
             </svg>
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">Your Position</h2>
-            <p className="text-xs text-white/50">Account overview and status</p>
+            <h2 className="text-lg font-bold text-white">{t("position.title")}</h2>
+            <p className="text-xs text-white/50">{t("position.subtitle")}</p>
           </div>
         </div>
 
@@ -144,7 +146,7 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
             {icons[healthConfig.icon as keyof typeof icons]}
           </svg>
           <div>
-            <p className="text-xs text-white/50">Health Factor</p>
+            <p className="text-xs text-white/50">{t("position.healthFactor")}</p>
             <p className={`text-lg font-bold ${healthConfig.text}`}>{healthFactor}</p>
           </div>
         </div>
@@ -177,11 +179,11 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <p className="text-white/50 text-xs mb-1">Max Withdraw</p>
+            <p className="text-white/50 text-xs mb-1">{t("position.maxWithdraw")}</p>
             <p className="text-xl font-bold text-blue-400">
               {parseFloat(maxWithdraw).toLocaleString("en-US", { maximumFractionDigits: 2 })}
             </p>
-            <p className="text-white/30 text-xs mt-1">USD8 available</p>
+            <p className="text-white/30 text-xs mt-1">{t("position.usd8Available")}</p>
           </div>
         </div>
 
@@ -194,11 +196,11 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
-            <p className="text-white/50 text-xs mb-1">Max Borrow</p>
+            <p className="text-white/50 text-xs mb-1">{t("position.maxBorrow")}</p>
             <p className="text-xl font-bold text-purple-400">
               {parseFloat(maxBorrow).toLocaleString("en-US", { maximumFractionDigits: 2 })}
             </p>
-            <p className="text-white/30 text-xs mt-1">USD0 available</p>
+            <p className="text-white/30 text-xs mt-1">{t("position.usd0Available")}</p>
           </div>
         </div>
       </div>
@@ -207,7 +209,7 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
       {healthFactor !== "Infinity" && (
         <div className="mt-6 p-4 rounded-xl bg-white/5">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-white/70">Health Factor Progress</span>
+            <span className="text-sm text-white/70">{t("position.healthProgress")}</span>
             <span className={`text-sm font-semibold ${healthConfig.text}`}>{healthConfig.label}</span>
           </div>
           <div className="h-3 bg-white/10 rounded-full overflow-hidden">
@@ -221,8 +223,8 @@ export function UserPosition({ provider, signer, address }: UserPositionProps) {
             ></div>
           </div>
           <div className="flex justify-between mt-2 text-xs text-white/30">
-            <span>Risk</span>
-            <span>Safe</span>
+            <span>{t("position.risk")}</span>
+            <span>{t("position.safe")}</span>
           </div>
         </div>
       )}

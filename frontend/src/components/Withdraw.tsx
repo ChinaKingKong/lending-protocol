@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { parseUnits, Contract } from "ethers";
 import { useUserPosition } from "../hooks/useLendingProtocol";
 import { useLendingProtocol } from "../hooks/useContract";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface WithdrawProps {
   signer: any;
@@ -10,6 +11,7 @@ interface WithdrawProps {
 }
 
 export function Withdraw({ signer, address, onRefresh }: WithdrawProps) {
+  const { t } = useLanguage();
   const [amount, setAmount] = useState("");
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -23,13 +25,13 @@ export function Withdraw({ signer, address, onRefresh }: WithdrawProps) {
 
   const handleWithdraw = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      setError("Please enter a valid amount");
+      setError(t("withdraw.errorValidAmount"));
       return;
     }
 
     const max = parseFloat(maxWithdraw);
     if (parseFloat(amount) > max) {
-      setError(`Maximum withdrawable is ${max.toFixed(2)} USD8`);
+      setError(t("withdraw.errorMax", { max: max.toFixed(2) }));
       return;
     }
 
@@ -40,7 +42,7 @@ export function Withdraw({ signer, address, onRefresh }: WithdrawProps) {
     try {
       const contract: Contract = useLendingProtocol(signer);
       if (!contract) {
-        throw new Error("Contract not connected");
+        throw new Error(t("withdraw.errorContract"));
       }
 
       const amountToWithdraw = parseUnits(amount, 18);
@@ -53,7 +55,7 @@ export function Withdraw({ signer, address, onRefresh }: WithdrawProps) {
       onRefresh();
     } catch (err: any) {
       console.error("Withdraw failed:", err);
-      setError(err.message || "Withdraw failed");
+      setError(err.message || t("withdraw.errorWithdraw"));
       setTxHash(null);
     } finally {
       setIsWithdrawing(false);
@@ -74,14 +76,14 @@ export function Withdraw({ signer, address, onRefresh }: WithdrawProps) {
           </svg>
         </div>
         <div>
-          <h3 className="text-lg font-bold text-white">Withdraw Assets</h3>
-          <p className="text-xs text-white/50">Remove your deposited tokens</p>
+          <h3 className="text-lg font-bold text-white">{t("withdraw.title")}</h3>
+          <p className="text-xs text-white/50">{t("withdraw.subtitle")}</p>
         </div>
       </div>
 
       {/* Input Section */}
       <div className="relative mb-6">
-        <label className="text-white/50 text-sm mb-2 block">Amount (USD8)</label>
+        <label className="text-white/50 text-sm mb-2 block">{t("withdraw.amount")}</label>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <input
@@ -97,19 +99,19 @@ export function Withdraw({ signer, address, onRefresh }: WithdrawProps) {
               className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-sm bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
               disabled={isWithdrawing}
             >
-              MAX
+              {t("supply.max")}
             </button>
           </div>
         </div>
         <div className="flex justify-between items-center mt-2">
           <p className="text-white/30 text-xs">
-            Supplied:{" "}
+            {t("withdraw.supplied")}:{" "}
             <span className="text-white/70">
               {position ? (Number(position.supplied) / 1e18).toFixed(2) : "0.00"} USD8
             </span>
           </p>
           <p className="text-blue-400 text-xs">
-            Available: {parseFloat(maxWithdraw).toLocaleString("en-US", { maximumFractionDigits: 2 })} USD8
+            {t("withdraw.available")}: {parseFloat(maxWithdraw).toLocaleString("en-US", { maximumFractionDigits: 2 })} USD8
           </p>
         </div>
       </div>
@@ -125,14 +127,14 @@ export function Withdraw({ signer, address, onRefresh }: WithdrawProps) {
             <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            Withdrawing...
+            {t("withdraw.withdrawing")}
           </>
         ) : (
           <>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V6" />
             </svg>
-            Withdraw {amount && `${amount} USD8`}
+            {amount ? t("withdraw.withdrawAmount", { amount }) : t("withdraw.withdraw")}
           </>
         )}
       </button>
@@ -153,7 +155,7 @@ export function Withdraw({ signer, address, onRefresh }: WithdrawProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div className="flex-1">
-            <p className="font-medium">Transaction submitted</p>
+            <p className="font-medium">{t("withdraw.txSubmitted")}</p>
             <p className="text-white/50 text-xs mt-1 break-all">
               {txHash.slice(0, 12)}...{txHash.slice(-10)}
             </p>

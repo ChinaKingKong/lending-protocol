@@ -165,11 +165,7 @@ The dashboard includes:
 - Wallet connection with network switching
 - Pool information with utilization rates
 - User position with health factor
-- Supply/Withdraw/Borrow/Repay actions
-
-## License
-
-MIT
+- Supply/Withdraw/Borrow/Repay actions 
 
 ## Author
 

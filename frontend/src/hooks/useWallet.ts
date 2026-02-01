@@ -23,7 +23,7 @@ export function useWallet() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Check for existing connection on mount
+  // Check for existing connection on mount (only hydrate if already on local to avoid RPC rate-limit errors)
   useEffect(() => {
     const checkConnection = async () => {
       if (!window.ethereum) return;
@@ -31,21 +31,23 @@ export function useWallet() {
       try {
         const provider = new BrowserProvider(window.ethereum);
         const accounts = await provider.listAccounts();
+        if (accounts.length === 0) return;
 
-        if (accounts.length > 0) {
-          const address = await accounts[0].getAddress();
-          const balance = await provider.getBalance(address);
-          const network = await provider.getNetwork();
+        const network = await provider.getNetwork();
+        const chainId = Number(network.chainId);
+        const address = await accounts[0].getAddress();
 
-          setWallet({
-            isConnected: true,
-            address,
-            chainId: Number(network.chainId),
-            balance,
-          });
+        if (chainId !== LOCAL_CHAIN_ID) {
+          setWallet({ isConnected: true, address, chainId, balance: 0n });
           setSigner(await provider.getSigner());
           setProvider(provider);
+          return;
         }
+
+        const balance = await provider.getBalance(address);
+        setWallet({ isConnected: true, address, chainId, balance });
+        setSigner(await provider.getSigner());
+        setProvider(provider);
       } catch (err) {
         console.error("Failed to check connection:", err);
       }
@@ -135,26 +137,32 @@ export function useWallet() {
     setError(null);
 
     try {
-      const provider = new BrowserProvider(window.ethereum);
-      const accounts = await provider.send("eth_requestAccounts", []);
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts", params: [] });
       const address = accounts[0];
-      const balance = await provider.getBalance(address);
-      const network = await provider.getNetwork();
-      let chainId = Number(network.chainId);
-
-      // Check if on correct network, if not, switch
-      if (chainId !== LOCAL_CHAIN_ID) {
-        const switched = await switchToLocalNetwork();
-        if (!switched) {
-          setError("Please switch to Hardhat local network (Chain ID: 31337)");
-          setIsConnecting(false);
-          return false;
-        }
-        // Re-fetch network after switch
-        const newNetwork = await provider.getNetwork();
-        chainId = Number(newNetwork.chainId);
+      if (!address) {
+        setError("No account selected");
+        setIsConnecting(false);
+        return false;
       }
 
+      // Switch to local network first so all RPC calls (getBalance etc.) go to localhost, avoiding rate-limited public RPC errors
+      const switched = await switchToLocalNetwork();
+      if (!switched) {
+        setError("Please switch to Hardhat local network (Chain ID: 31337) in MetaMask");
+        setIsConnecting(false);
+        return false;
+      }
+
+      const provider = new BrowserProvider(window.ethereum);
+      const network = await provider.getNetwork();
+      const chainId = Number(network.chainId);
+      if (chainId !== LOCAL_CHAIN_ID) {
+        setError("Please switch to Hardhat local network (Chain ID: 31337) in MetaMask");
+        setIsConnecting(false);
+        return false;
+      }
+
+      const balance = await provider.getBalance(address);
       const signer = await provider.getSigner();
 
       setWallet({
